@@ -1,0 +1,17 @@
+input,
+textarea {
+  padding: 8px;
+  margin: 5px 0;
+  border: 1px solid var(--borde);
+  border-radius: 15px;
+  background-color: var(--input-fondo);
+  color: var(--input-texto);
+  width: 95%;
+  box-sizing: border-box;
+  font-family: "Kalam", cursive;
+}
+
+input:focus,
+textarea:focus {
+  outline: 2px solid var(--boton-fondo);
+}

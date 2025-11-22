@@ -1,0 +1,19 @@
+.lista-chats div {
+  padding: 10px;
+  border-bottom: 1px solid var(--borde);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.lista-chats div:hover {
+  background-color: var(--header);
+}
+
+.mensajes {
+  height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--borde);
+  padding: 10px;
+  border-radius: 4px;
+  background-color: var(--input-fondo);
+}

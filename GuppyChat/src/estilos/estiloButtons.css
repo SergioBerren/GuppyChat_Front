@@ -1,0 +1,21 @@
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: var(--boton-fondo);
+  color: var(--boton-texto);
+  border-radius: 20px;
+  font-family: "Kalam", cursive;
+  padding: 10px;
+  width: 70%;
+  border: none;
+  margin: 0 auto;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}

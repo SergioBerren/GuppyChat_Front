@@ -1,0 +1,34 @@
+.contenedorLogin {
+  background-color: var(--header);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  padding: 20px;
+  margin: auto;
+}
+
+.divSuperiorFormularioLogin {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 20px;
+}
+
+.divSuperiorFormularioLogin h3 {
+  font-family: "Kalam";
+  font-size: 1.2rem;
+  color: var(--boton-fondo);
+  text-align: center;
+  margin-top: 10px;
+}
+
+@media (max-width: 480px) {
+  .contenedorLogin {
+    padding: 15px;
+    border-radius: 15px;
+  }
+  .divSuperiorFormularioLogin h3 {
+    font-size: 1rem;
+  }
+}

@@ -1,0 +1,14 @@
+.cuenta-container {
+  padding: 20px;
+}
+
+.cuenta-container button {
+  margin-top: 10px;
+}
+
+.cuenta-container form {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

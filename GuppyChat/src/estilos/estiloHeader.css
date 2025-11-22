@@ -1,0 +1,79 @@
+/* ===== HEADER GENERAL ===== 
+.header {
+  background-color: #f0f0f0;
+  padding: 10px 20px;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Contenedor de logo + título 
+.logo-titulo {
+  display: flex;
+  align-items: center; /* Alinea verticalmente el logo con el texto 
+  justify-content: center; /* Centra todo horizontalmente (opcional) 
+}
+
+/* Logo 
+.logo-header {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* Hace la imagen redonda 
+  object-fit: cover; /* Ajusta la imagen al contenedor 
+  margin-right: 10px; /* Espacio entre logo y texto 
+}
+
+/* Título 
+.titulo-header {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+/* ===== MODO OSCURO ===== 
+body.dark-mode .header {
+  background-color: #222;
+  border-color: #444;
+}
+
+body.dark-mode .titulo-header {
+  color: #fff;
+}
+
+/* ===== RESPONSIVE ===== 
+@media (max-width: 600px) {
+  .titulo-header {
+    font-size: 1.2rem;
+  }
+
+  .logo-header {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+
+*/
+
+.header {
+  background-color: var(--header);
+  color: var(--texto);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  .logo-header{
+    width: 10%;
+    height: 100%;
+  }
+}
+
+.titulo-header {
+  margin: 0;
+  font-size: 1.5rem;
+}

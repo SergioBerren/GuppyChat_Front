@@ -1,0 +1,49 @@
+/* ================================
+   🎨 VARIABLES MODO CLARO
+================================ */
+:root {
+  --fondo: #9BB3B8;          /* contenedorLogin */
+  --texto: #000000;
+  --header: #9BB3B8;
+  --footer: #f0f0f0;
+  --input-fondo: #DDD7D7;
+  --input-texto: #000000;
+  --boton-fondo: #053D64;
+  --boton-texto: #ffffff;
+  --borde: #ccc;
+}
+
+/* ================================
+   🌙 MODO OSCURO (MORADOS)
+================================ */
+body.dark-mode {
+  --fondo: #1a1025;
+  --texto: #e9d8ff;
+  --header: #241232;
+  --footer: #241232;
+  --input-fondo: #2b1840;
+  --input-texto: #f5e9ff;
+  --boton-fondo: #7b3fe4;
+  --boton-texto: #ffffff;
+  --borde: #5a3d80;
+}
+
+/* ================================
+   ESTILOS GLOBALES
+================================ */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: var(--fondo);
+  color: var(--texto);
+  transition: background 0.3s, color 0.3s;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.container {
+  padding: 20px;
+}

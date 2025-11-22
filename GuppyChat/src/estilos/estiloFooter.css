@@ -1,0 +1,68 @@
+/* Footer general */
+footer {
+  background-color: #7fa3a8; /* Azul más oscuro que #9BB3B8 */
+  color: var(--texto);
+  padding: 10px 20px;
+  text-align: center;
+  width: 100%;
+
+  /* Pegado al fondo */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+
+/* Footer público */
+.footer-publico {
+  color: var(--texto);
+}
+
+/* Footer privado */
+.footer-privado {
+  display: flex;
+  flex-direction: row;        /* Inline */
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: nowrap;          /* Evita que salten de línea */
+}
+
+.footer-privado button {
+  padding: 8px 16px;
+  border: none;
+  background-color: var(--boton-fondo);
+  color: var(--boton-texto);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin: 5px;
+}
+
+.footer-privado button:hover {
+  opacity: 0.9;
+}
+
+/* Modo oscuro */
+body.dark-mode footer {
+  background-color: #3d1e52; /* Morado más oscuro que el modo oscuro principal */
+}
+
+body.dark-mode .footer-publico {
+  color: var(--texto);
+}
+
+body.dark-mode .footer-privado button {
+  background-color: var(--boton-fondo);
+}
+
+body.dark-mode .footer-privado button:hover {
+  opacity: 0.9;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .footer-privado button {
+    width: auto; /* Mantiene inline, sin ocupar toda la línea */
+  }
+}
+
+

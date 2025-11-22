@@ -1,0 +1,16 @@
+@media (max-width: 768px) {
+  .contenedorLogin {
+    width: 90%;
+  }
+}
+
+@media (max-width: 480px) {
+  button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mensajes {
+    height: 300px;
+  }
+}
