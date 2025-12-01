@@ -1,14 +1,40 @@
-.cuenta-container {
-  padding: 20px;
-}
-
 .cuenta-container button {
   margin-top: 10px;
 }
+.cuenta-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-.cuenta-container form {
+.cuenta-info {
+  width: 300px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.cuenta-info p {
+  margin: 5px 0;
+}
+
+.formulario-edicion {
   margin-top: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  align-items: center;
+}
+
+.acciones-usuario {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  width: 80%;
+  max-width: 400px;
+  justify-content: center;
+}
+
+.acciones-usuario button {
+  flex: 1;
 }

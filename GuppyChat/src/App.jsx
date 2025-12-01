@@ -1,24 +1,48 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, ContextoAuth } from './login/AuthProvider';
+import { useContext } from 'react';
 
+// Toastify
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Rutas públicas
 import PaginaLogin from './login/PaginaLogin';
 import FormularioRegistro from './login/FormularioRegistro';
+import TerminosYCondiciones from './paginas/TerminosYCondiciones';
+
+// Rutas privadas
 import PaginaChats from './paginas/PaginaChats';
+import PaginaGrupos from './paginas/PaginaGrupos';
 import ChatGrupal from './paginas/ChatGrupal';
 import Cuenta from './paginas/Cuenta';
-import TerminosYCondiciones from './paginas/TerminosYCondiciones';
-import PaginaGrupos from './paginas/PaginaGrupos';
 
+// Componentes globales
 import Header from './componentes/Header';
 import FooterPublico from './componentes/FooterPublico';
 import FooterPrivado from './componentes/FooterPrivado';
 
-import { useContext } from 'react';
+// Estilos globales
+import './estilos/estiloGlobal.css';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+
+        {/* 🔔 Toastify */}
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
+
         <ContenidoApp />
       </Router>
     </AuthProvider>
@@ -34,12 +58,12 @@ function ContenidoApp() {
       {usuario && <Header />}
 
       <Routes>
-        {/* Rutas públicas */}
+        {/* 🟦 Rutas públicas */}
         <Route path="/login" element={<PaginaLogin />} />
         <Route path="/registro" element={<FormularioRegistro />} />
         <Route path="/terminosycondiciones" element={<TerminosYCondiciones />} />
 
-        {/* Rutas privadas */}
+        {/* 🟥 Rutas privadas */}
         <Route
           path="/chats"
           element={
@@ -48,6 +72,7 @@ function ContenidoApp() {
             </RutaPrivada>
           }
         />
+
         <Route
           path="/chats/grupos"
           element={
@@ -56,6 +81,7 @@ function ContenidoApp() {
             </RutaPrivada>
           }
         />
+
         <Route
           path="/chats/grupal/:id"
           element={
@@ -64,6 +90,7 @@ function ContenidoApp() {
             </RutaPrivada>
           }
         />
+
         <Route
           path="/cuenta"
           element={
@@ -73,17 +100,17 @@ function ContenidoApp() {
           }
         />
 
-        {/* Redirección por defecto */}
+        {/* Redirección global */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
 
-      {/* Footer: cambia según si hay sesión o no */}
+      {/* Footer cambia según sesión */}
       {usuario ? <FooterPrivado /> : <FooterPublico />}
     </>
   );
 }
 
-// Proteger rutas privadas
+// 🔐 Rutas privadas
 const RutaPrivada = ({ children }) => {
   const { usuario } = ContextoAuth._currentValue;
   return usuario ? children : <Navigate to="/login" />;

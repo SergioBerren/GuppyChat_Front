@@ -1,34 +1,96 @@
+/* Contenedor principal del login */
 .contenedorLogin {
-  background-color: var(--header);
+  background-color: #f5f6fa; /* color claro de fondo */
   border-radius: 20px;
   width: 90%;
   max-width: 400px;
-  padding: 20px;
-  margin: auto;
-}
-
-.divSuperiorFormularioLogin {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto auto;
+  padding: 30px 20px;
+  margin: 50px auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 20px;
 }
 
-.divSuperiorFormularioLogin h3 {
-  font-family: "Kalam";
-  font-size: 1.2rem;
-  color: var(--boton-fondo);
+/* Título centrado */
+.contenedorLogin h2 {
+  font-family: 'Kalam', cursive;
+  color: #2f3640;
+  margin-bottom: 20px;
   text-align: center;
-  margin-top: 10px;
 }
 
+/* Formulario dentro del login */
+.contenedorLogin form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 15px;
+}
+
+/* Inputs del formulario */
+.contenedorLogin input {
+  padding: 12px;
+  border-radius: 15px;
+  border: 1px solid #dcdde1;
+  font-size: 1rem;
+  font-family: 'Kalam', cursive;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.contenedorLogin input:focus {
+  outline: none;
+  border-color: #40739e;
+  box-shadow: 0 0 5px rgba(64, 115, 158, 0.5);
+}
+
+/* Contenedor de botones */
+.contenedorLogin form div:last-child {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Botones */
+.contenedorLogin button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 20px;
+  border: none;
+  background-color: #40739e;
+  color: #fff;
+  font-family: 'Kalam', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.contenedorLogin button:hover {
+  background-color: #273c75;
+  transform: translateY(-2px);
+}
+
+/* Mensaje de error */
+.contenedorLogin div {
+  color: red;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Responsive */
 @media (max-width: 480px) {
   .contenedorLogin {
-    padding: 15px;
+    padding: 20px;
     border-radius: 15px;
   }
-  .divSuperiorFormularioLogin h3 {
-    font-size: 1rem;
+
+  .contenedorLogin button {
+    font-size: 0.9rem;
   }
 }

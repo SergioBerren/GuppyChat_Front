@@ -7,17 +7,17 @@ let suscripcionActual = null;
 export const conectarWebSocket = (usuarioId, onMessage) => {
   // Si ya existe un cliente activo, solo actualizar la suscripción
   if (cliente && cliente.connected) {
-    console.log('WebSocket ya conectado, actualizando suscripción...');
+    console.log('✅ WebSocket ya conectado, actualizando suscripción...');
     suscribirseATopic(usuarioId, onMessage);
     return;
   }
 
-  console.log('Creando nueva conexión WebSocket...');
+  console.log('🔌 Creando nueva conexión WebSocket...');
   
   cliente = new Client({
     webSocketFactory: () => new SockJS('http://localhost:8080/ws/chat'),
     debug: function(str) { 
-      console.log('STOMP: ' + str); 
+      console.log('🔍 STOMP:', str); 
     },
     reconnectDelay: 5000,
     heartbeatIncoming: 4000,
@@ -25,17 +25,21 @@ export const conectarWebSocket = (usuarioId, onMessage) => {
   });
 
   cliente.onConnect = () => {
-    console.log('✅ Conectado a WebSocket');
+    console.log('✅ CONECTADO a WebSocket');
     suscribirseATopic(usuarioId, onMessage);
   };
 
   cliente.onStompError = (frame) => {
     console.error('❌ Error STOMP:', frame.headers['message']);
-    console.error('Detalles:', frame.body);
+    console.error('📄 Detalles:', frame.body);
   };
 
   cliente.onWebSocketClose = (event) => {
     console.warn('⚠️ WebSocket cerrado:', event);
+  };
+
+  cliente.onWebSocketError = (event) => {
+    console.error('❌ Error en WebSocket:', event);
   };
 
   cliente.activate();
@@ -44,21 +48,33 @@ export const conectarWebSocket = (usuarioId, onMessage) => {
 const suscribirseATopic = (usuarioId, onMessage) => {
   // Cancelar suscripción anterior si existe
   if (suscripcionActual) {
-    console.log('Cancelando suscripción anterior...');
-    suscripcionActual.unsubscribe();
+    console.log('🔄 Cancelando suscripción anterior...');
+    try {
+      suscripcionActual.unsubscribe();
+    } catch (err) {
+      console.warn('⚠️ Error al cancelar suscripción:', err);
+    }
   }
 
-  // Suscribirse al topic del usuario (cambiar /tema/ por /topic/)
-  console.log(`Suscribiéndose a /topic/${usuarioId}`);
-  suscripcionActual = cliente.subscribe(`/topic/${usuarioId}`, (mensaje) => {
-    console.log('📨 Mensaje recibido:', mensaje.body);
-    try {
-      const body = JSON.parse(mensaje.body);
-      onMessage(body);
-    } catch (error) {
-      console.error('Error al parsear mensaje:', error);
-    }
-  });
+  const topic = `/topic/${usuarioId}`;
+  console.log(`📡 Suscribiéndose a: ${topic}`);
+  
+  try {
+    suscripcionActual = cliente.subscribe(topic, (mensaje) => {
+      console.log('📨 Mensaje WebSocket recibido RAW:', mensaje.body);
+      try {
+        const body = JSON.parse(mensaje.body);
+        console.log('📦 Mensaje parseado:', body);
+        onMessage(body);
+      } catch (error) {
+        console.error('❌ Error al parsear mensaje:', error);
+        console.error('📄 Body recibido:', mensaje.body);
+      }
+    });
+    console.log('✅ Suscripción exitosa a', topic);
+  } catch (err) {
+    console.error('❌ Error al suscribirse:', err);
+  }
 };
 
 export const enviarMensajeWebSocket = (mensaje) => {
@@ -71,12 +87,12 @@ export const enviarMensajeWebSocket = (mensaje) => {
     console.warn('⚠️ WebSocket no conectado, intentando activar...');
     cliente.activate();
     
-    // Esperar un momento y reintentar
     setTimeout(() => {
       if (cliente.connected) {
-        enviarMensajeInmediato(mensaje);
+        return enviarMensajeInmediato(mensaje);
       } else {
         console.error('❌ No se pudo conectar para enviar el mensaje');
+        alert('No hay conexión. Por favor, recarga la página.');
       }
     }, 1000);
     return false;
@@ -87,11 +103,20 @@ export const enviarMensajeWebSocket = (mensaje) => {
 
 const enviarMensajeInmediato = (mensaje) => {
   try {
-    console.log('📤 Enviando mensaje:', mensaje);
+    const mensajeValidado = {
+      emisorId: String(mensaje.emisorId),
+      receptorId: String(mensaje.receptorId),
+      mensajeCifrado: mensaje.mensajeCifrado
+    };
+    
+    console.log('📤 Enviando mensaje via WebSocket:', mensajeValidado);
+    
     cliente.publish({ 
       destination: '/app/chat.enviar', 
-      body: JSON.stringify(mensaje) 
+      body: JSON.stringify(mensajeValidado) 
     });
+    
+    console.log('✅ Mensaje publicado en /app/chat.enviar');
     return true;
   } catch (error) {
     console.error('❌ Error al enviar mensaje:', error);
@@ -101,12 +126,21 @@ const enviarMensajeInmediato = (mensaje) => {
 
 export const desconectarWebSocket = () => {
   if (cliente) {
-    console.log('Desconectando WebSocket...');
+    console.log('🔌 Desconectando WebSocket...');
     if (suscripcionActual) {
-      suscripcionActual.unsubscribe();
+      try {
+        suscripcionActual.unsubscribe();
+      } catch (err) {
+        console.warn('⚠️ Error al desuscribirse:', err);
+      }
       suscripcionActual = null;
     }
-    cliente.deactivate();
+    try {
+      cliente.deactivate();
+    } catch (err) {
+      console.warn('⚠️ Error al desactivar cliente:', err);
+    }
     cliente = null;
+    console.log('✅ WebSocket desconectado');
   }
 };

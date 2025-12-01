@@ -19,3 +19,8 @@ button {
 button:hover {
   opacity: 0.9;
 }
+
+.formulario-edicion button {
+  width: 70%;
+  margin: 5px auto;
+}

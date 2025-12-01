@@ -1,107 +1,137 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { ContextoAuth } from '../login/AuthProvider.jsx';
 import api from '../servicios/api.js';
-import Swal from 'sweetalert2';
+import { toast } from 'react-toastify';
 import '../estilos/estiloCuenta.css';
+import '../estilos/estiloButtons.css';
+import '../estilos/estiloInputs.css';
 
-// Iconos de react-icons
 import { 
   FaEdit, 
   FaSignOutAlt, 
   FaSun, 
   FaMoon, 
   FaSave, 
-  FaTimes 
+  FaTimes,
+  FaKey
 } from 'react-icons/fa';
 
 export default function Cuenta() {
   const { usuario, actualizarUsuarioLocal, cerrarSesion } = useContext(ContextoAuth);
-  const [datos, setDatos] = useState({ nombre: '', apellido: '' });
+  const [datos, setDatos] = useState({ nombre: '', apellido: '', nombreUsuario: '' });
   const [editando, setEditando] = useState(false);
   const [modoOscuro, setModoOscuro] = useState(false);
+  
+  const [mostrarCambiarPassword, setMostrarCambiarPassword] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    passwordActual: '',
+    passwordNueva: '',
+    passwordNuevaConfirm: ''
+  });
 
-  // Cargar datos del usuario
   useEffect(() => {
     if (usuario) {
       setDatos({
         nombre: usuario.nombre || '',
-        apellido: usuario.apellido || ''
+        apellido: usuario.apellido || '',
+        nombreUsuario: usuario.nombreUsuario || ''
       });
-      
-      // Aplicar modo oscuro del usuario
-      const modoOscuroUsuario = usuario.modoOscuro || false;
+
+      const modoOscuroUsuario = usuario.modoOscuro === true || usuario.modoOscuro === "true";
       setModoOscuro(modoOscuroUsuario);
       document.body.classList.toggle('dark-mode', modoOscuroUsuario);
     }
   }, [usuario]);
 
-  // Cambios de inputs
   const handleChange = (e) => {
     setDatos(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // Actualizar datos
+  const handlePasswordChange = (e) => {
+    setPasswordData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   const handleActualizar = async (e) => {
     e.preventDefault();
+
+    // Validación: campos obligatorios
+    if (!datos.nombreUsuario.trim() || !datos.nombre.trim() || !datos.apellido.trim()) {
+      toast.error('El nombre de usuario, nombre y apellido son obligatorios');
+      return;
+    }
+
     try {
       const cambios = {};
-      
-      // Comparar solo nombre y apellido
-      if (datos.nombre !== (usuario.nombre || '')) {
-        cambios.nombre = datos.nombre;
-        console.log(`Cambios: ${cambios.nombre}, datos: ${datos.nombre}, usuario: ${usuario.nombre}`);
-      }
-      if (datos.apellido !== (usuario.apellido || '')) {
-        cambios.apellido = datos.apellido;
-        console.log(`Cambios: ${cambios.apellido}, datos: ${datos.apellido} usuario: ${usuario.apellido}`);
-      } else{
-        cambios.apellido = null; // Permitir borrar apellido        
-      }
+      if (datos.nombre !== usuario.nombre) cambios.nombre = datos.nombre.trim();
+      if (datos.apellido !== usuario.apellido) cambios.apellido = datos.apellido.trim();
+      if (datos.nombreUsuario !== usuario.nombreUsuario) cambios.nombreUsuario = datos.nombreUsuario.trim();
 
       if (Object.keys(cambios).length === 0) {
-        Swal.fire({
-          icon: 'info',
-          title: 'Sin cambios',
-          text: 'No hay datos modificados para actualizar',
-        });
+        toast.info('No hay cambios para actualizar');
         return;
       }
 
-      // Corregir la URL - quitar duplicado /api
-      // const response = await api.patch(`/usuarios/api/usuarios/${usuario.id}`, cambios);
-      // const response = await api.patch(`/usuarios/${usuario.id}`, cambios);
-      const response = await api.patch(`/api/usuarios/${usuario.id}`, cambios);
-
+      const response = await api.patch(`/usuarios/${usuario.id}`, cambios);
       actualizarUsuarioLocal(response.data);
-
-      Swal.fire({
-        icon: 'success',
-        title: '¡Cuenta actualizada!',
-        text: 'Tus datos se actualizaron correctamente',
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
+      toast.success('¡Cuenta actualizada correctamente!');
       setEditando(false);
 
     } catch (err) {
-      console.error(err);
-      console.log("TOKEN FRONT:", localStorage.getItem("token"));
-      Swal.fire({
-        icon: 'error',
-        title: 'Error al actualizar',
-        text: err.response?.data?.error || 'Algo salió mal',
-      });
+      console.error('❌ Error al actualizar:', err);
+      toast.error(err.response?.data?.error || 'Error al actualizar los datos');
     }
   };
 
-  // Toggle modo oscuro
-  const toggleModo = () => {
-    setModoOscuro(!modoOscuro);
-    document.body.classList.toggle('dark-mode', !modoOscuro);
+  const handleCambiarPassword = async (e) => {
+    e.preventDefault();
+    if (!passwordData.passwordActual || !passwordData.passwordNueva || !passwordData.passwordNuevaConfirm) {
+      toast.error('Debes completar todos los campos');
+      return;
+    }
+    if (passwordData.passwordNueva !== passwordData.passwordNuevaConfirm) {
+      toast.error('Las contraseñas nuevas no coinciden');
+      return;
+    }
+    if (passwordData.passwordNueva.length < 6) {
+      toast.error('La contraseña debe tener al menos 6 caracteres');
+      return;
+    }
+
+    try {
+      await api.post('/api/auth/cambiar-password', {
+        correo: usuario.correo,
+        passwordActual: passwordData.passwordActual,
+        passwordNueva: passwordData.passwordNueva
+      });
+      toast.success('¡Contraseña cambiada exitosamente!');
+      setMostrarCambiarPassword(false);
+      setPasswordData({
+        passwordActual: '',
+        passwordNueva: '',
+        passwordNuevaConfirm: ''
+      });
+    } catch (err) {
+      console.error('❌ Error al cambiar contraseña:', err);
+      toast.error(err.response?.data?.error || 'Error al cambiar la contraseña');
+    }
   };
 
-  // Cerrar sesión
+  const toggleModo = async () => {
+    const nuevoModo = !modoOscuro;
+    setModoOscuro(nuevoModo);
+    document.body.classList.toggle('dark-mode', nuevoModo);
+
+    try {
+      const response = await api.patch(`/usuarios/${usuario.id}`, {
+        modoOscuro: nuevoModo
+      });
+      actualizarUsuarioLocal(response.data);
+    } catch (err) {
+      console.error('❌ Error al guardar modo oscuro:', err);
+      toast.error('No se pudo guardar el modo oscuro');
+    }
+  };
+
   const handleCerrarSesion = () => {
     cerrarSesion();
   };
@@ -109,52 +139,51 @@ export default function Cuenta() {
   if (!usuario) return <p>Cargando...</p>;
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="cuenta-container">
       <h2>Mi Cuenta</h2>
 
-      <p><strong>Nombre de usuario:</strong> {usuario.nombreUsuario}</p>
-      <p><strong>Nombre:</strong> {usuario.nombre || 'No especificado'}</p>
-      <p><strong>Apellido:</strong> {usuario.apellido || 'No especificado'}</p>
-      <p><strong>Email:</strong> {usuario.correo}</p>
+      <div className="cuenta-info">
+        <p><strong>Nombre de usuario:</strong> {usuario.nombreUsuario}</p>
+        <p><strong>Nombre:</strong> {usuario.nombre || 'No especificado'}</p>
+        <p><strong>Apellido:</strong> {usuario.apellido || 'No especificado'}</p>
+        <p><strong>Email:</strong> {usuario.correo}</p>
+      </div>
 
-      <button onClick={() => setEditando(!editando)}>
-        {editando 
-          ? (<><FaTimes style={{ marginRight: '6px' }} /> Cancelar</>) 
-          : (<><FaEdit style={{ marginRight: '6px' }} /> Modificar datos</>)
-        }
-      </button>
+      {!editando && (
+        <button onClick={() => setEditando(true)}><FaEdit /> Modificar datos</button>
+      )}
 
       {editando && (
-        <form onSubmit={handleActualizar} style={{ marginTop: '10px' }}>
-          <input
-            name="nombre"
-            value={datos.nombre}
-            onChange={handleChange}
-            placeholder="Nombre"
-          /><br />
-          <input
-            name="apellido"
-            value={datos.apellido}
-            onChange={handleChange}
-            placeholder="Apellido"
-          /><br />
-          <button type="submit">
-            <FaSave style={{ marginRight: '6px' }} /> Guardar cambios
-          </button>
+        <form onSubmit={handleActualizar} className="formulario-edicion">
+          <input name="nombreUsuario" value={datos.nombreUsuario} onChange={handleChange} placeholder="Nombre de usuario"/>
+          <input name="nombre" value={datos.nombre} onChange={handleChange} placeholder="Nombre"/>
+          <input name="apellido" value={datos.apellido} onChange={handleChange} placeholder="Apellido"/>
+          
+          <button type="submit"><FaSave /> Guardar cambios</button>
+          <button type="button" onClick={() => setEditando(false)}><FaTimes /> Cancelar</button>
         </form>
       )}
 
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={toggleModo}>
-          {modoOscuro 
-            ? (<><FaSun style={{ marginRight: '6px' }} /> Modo claro</>) 
-            : (<><FaMoon style={{ marginRight: '6px' }} /> Modo oscuro</>)
-          }
-        </button>
+      {!mostrarCambiarPassword && (
+        <button onClick={() => setMostrarCambiarPassword(true)}><FaKey /> Cambiar contraseña</button>
+      )}
 
-        <button onClick={handleCerrarSesion} style={{ marginLeft: '10px' }}>
-          <FaSignOutAlt style={{ marginRight: '6px' }} /> Cerrar sesión
+      {mostrarCambiarPassword && (
+        <form onSubmit={handleCambiarPassword} className="formulario-edicion">
+          <input type="password" name="passwordActual" value={passwordData.passwordActual} onChange={handlePasswordChange} placeholder="Contraseña actual"/>
+          <input type="password" name="passwordNueva" value={passwordData.passwordNueva} onChange={handlePasswordChange} placeholder="Nueva contraseña"/>
+          <input type="password" name="passwordNuevaConfirm" value={passwordData.passwordNuevaConfirm} onChange={handlePasswordChange} placeholder="Confirmar nueva contraseña"/>
+          
+          <button type="submit"><FaSave /> Cambiar contraseña</button>
+          <button type="button" onClick={() => setMostrarCambiarPassword(false)}><FaTimes /> Cancelar</button>
+        </form>
+      )}
+
+      <div className="acciones-usuario">
+        <button onClick={toggleModo}>
+          {modoOscuro ? (<><FaSun /> Modo claro</>) : (<><FaMoon /> Modo oscuro</>)}
         </button>
+        <button onClick={handleCerrarSesion}><FaSignOutAlt /> Cerrar sesión</button>
       </div>
     </div>
   );

@@ -1,5 +1,95 @@
-form.registro-form {
+/* Contenedor principal del login / registro */
+.contenedorLogin,
+.registro-form {
+  background-color: #f5f6fa; /* fondo claro */
+  border-radius: 20px;
+  width: 85%;               /* un poco más estrecho */
+  max-width: 380px;         /* un poco más corto */
+  padding: 25px 20px;
+  margin: 50px auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  font-family: 'Kalam', cursive;
+}
+
+/* Títulos */
+.contenedorLogin h2,
+.registro-form h2 {
+  text-align: center;
+  color: #2f3640;
+  margin-bottom: 20px;
+}
+
+/* Inputs */
+.contenedorLogin input,
+.registro-form input {
+  padding: 12px;
+  border-radius: 15px;
+  border: 1px solid #dcdde1;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.contenedorLogin input:focus,
+.registro-form input:focus {
+  outline: none;
+  border-color: #40739e; /* azul del botón */
+  box-shadow: 0 0 5px rgba(64,115,158,0.5);
+}
+
+/* Botones */
+.contenedorLogin button,
+.registro-form button {
+  padding: 12px;
+  border-radius: 20px;
+  border: none;
+  background-color: #40739e; /* mismo color azul */
+  color: #fff;
+  font-family: 'Kalam', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.contenedorLogin button:hover,
+.registro-form button:hover {
+  background-color: #273c75;
+  transform: translateY(-2px);
+}
+
+/* Botones del formulario alineados y separados */
+.contenedorLogin form div:last-child,
+.registro-form button + button {
+  margin-top: 10px;
+}
+
+/* Mensaje de error */
+.contenedorLogin div,
+.registro-form div.error {
+  color: red;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .contenedorLogin,
+  .registro-form {
+    width: 90%;
+    padding: 20px;
+    border-radius: 15px;
+  }
+
+  .contenedorLogin button,
+  .registro-form button {
+    font-size: 0.9rem;
+  }
 }
