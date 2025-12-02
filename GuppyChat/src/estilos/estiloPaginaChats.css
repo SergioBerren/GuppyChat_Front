@@ -1,0 +1,273 @@
+/* Container principal */
+.pagina-chats {
+  display: flex;
+  height: calc(100vh - 120px);
+}
+
+/* Sidebar */
+.chats-sidebar {
+  width: 320px;
+  border-right: 1px solid var(--borde);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--header);
+}
+
+/* Header del sidebar */
+.chats-sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.chats-sidebar-header h3 {
+  margin: 0 0 15px 0;
+}
+
+/* Botones de acción */
+.chats-botones-accion {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.chats-botones-accion button {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 11px;
+  position: relative;
+  transition: opacity 0.2s;
+}
+
+.chats-botones-accion button:hover {
+  opacity: 0.9;
+}
+
+.btn-solicitudes {
+  background-color: #e9ecef;
+  color: black;
+}
+
+.btn-solicitudes.activo {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-bloqueados {
+  background-color: #e9ecef;
+  color: black;
+}
+
+.btn-bloqueados.activo {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-nuevo-mensaje {
+  background-color: #28a745;
+  color: white;
+}
+
+/* Badge de notificaciones */
+.badge-notificacion {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* Barra de búsqueda */
+.chats-busqueda input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--borde);
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background-color: var(--input-fondo);
+  color: var(--input-texto);
+}
+
+/* Lista de contenido */
+.chats-lista-contenido {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chats-lista-contenido-inner {
+  padding: 10px;
+}
+
+.chats-lista-titulo {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--texto);
+  opacity: 0.7;
+}
+
+.chats-lista-vacia {
+  text-align: center;
+  color: var(--texto);
+  opacity: 0.6;
+  font-size: 13px;
+  padding: 20px;
+}
+
+/* Items de lista (contactos, solicitudes, bloqueados) */
+.chat-item {
+  padding: 12px;
+  background-color: white;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: background-color 0.2s;
+}
+
+.chat-item:hover {
+  background-color: #f8f9fa;
+}
+
+body.dark-mode .chat-item {
+  background-color: var(--input-fondo);
+}
+
+body.dark-mode .chat-item:hover {
+  background-color: var(--fondo);
+}
+
+/* Contacto */
+.contacto-item {
+  padding: 15px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--borde);
+  background-color: var(--borde);
+  transition: background-color 0.2s;
+}
+
+.contacto-item:hover {
+  background-color: #f8f9fa;
+}
+
+.contacto-item.seleccionado {
+  background-color: #e7f3ff;
+}
+
+body.dark-mode .contacto-item {
+  background-color: var(--header);
+}
+
+body.dark-mode .contacto-item:hover {
+  background-color: var(--fondo);
+}
+
+body.dark-mode .contacto-item.seleccionado {
+  background-color: #2b1840;
+}
+
+.contacto-nombre {
+  font-weight: 500;
+  color: var(--texto);
+}
+
+.contacto-correo {
+  font-size: 12px;
+  color: var(--texto);
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+/* Solicitud */
+.solicitud-item {
+  padding: 12px;
+}
+
+.solicitud-autor {
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: var(--texto);
+}
+
+.solicitud-botones {
+  display: flex;
+  gap: 5px;
+}
+
+.solicitud-botones button {
+  flex: 1;
+  padding: 6px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-aceptar {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-rechazar {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Bloqueado */
+.bloqueado-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bloqueado-nombre {
+  font-weight: bold;
+  color: var(--texto);
+}
+
+.btn-desbloquear {
+  padding: 6px 12px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* Área del chat */
+.chats-area-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chats-sin-seleccion {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--texto);
+  opacity: 0.6;
+  font-size: 18px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chats-sidebar {
+    width: 100%;
+  }
+  
+  .pagina-chats {
+    flex-direction: column;
+  }
+}

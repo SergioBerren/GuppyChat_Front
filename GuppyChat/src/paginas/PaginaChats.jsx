@@ -12,7 +12,8 @@ import { agregarContacto, obtenerContactos, buscarContactos } from '../servicios
 import ChatIndividual from './ChatIndividual';
 import { ContextoAuth } from '../login/AuthProvider';
 import Swal from 'sweetalert2';
-import '../estilos/estiloChat.css';
+import { toast } from 'react-toastify';
+import '../estilos/estiloPaginaChats.css';
 
 export default function PaginaChats() {
   const [usuarios, setUsuarios] = useState([]);
@@ -97,6 +98,7 @@ export default function PaginaChats() {
       }
     });
 
+    // ✅ CORREGIDO: Solo agregar si el usuario confirmó (no canceló)
     if (formValues) {
       try {
         const respuesta = await agregarContacto(
@@ -105,24 +107,16 @@ export default function PaginaChats() {
           formValues.nombre
         );
         
-        Swal.fire({
-          icon: 'success',
-          title: '¡Contacto agregado!',
-          text: 'Se ha enviado una solicitud de chat automáticamente.',
-          timer: 2000
-        });
+        toast.success('¡Contacto agregado! Se envió una solicitud automáticamente.');
         
         cargarDatos();
       } catch (error) {
         console.error('Error al agregar contacto:', error);
         const mensaje = error.response?.data?.error || 'No se pudo agregar el contacto';
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: mensaje
-        });
+        toast.error(mensaje);
       }
     }
+    // Si formValues es undefined/null, significa que canceló - no hacemos nada
   };
 
   const manejarSeleccionContacto = async (contacto) => {
@@ -136,51 +130,31 @@ export default function PaginaChats() {
         const usuarioChat = {
           id: contacto.contactoId,
           nombreUsuario: contacto.nombrePersonalizado,
-          correo: contacto.correo
+          correo: contacto.correo,
+          clavePublica: contacto.clavePublica // Para cifrado E2EE
         };
         setSeleccionado(usuarioChat);
       } else {
         if (razon === 'bloqueado') {
-          Swal.fire({
-            icon: 'error',
-            title: 'Usuario bloqueado',
-            text: 'No puedes chatear con este usuario porque existe un bloqueo.',
-          });
+          toast.error('No puedes chatear con este usuario porque existe un bloqueo.');
         } else if (razon === 'pendiente') {
-          Swal.fire({
-            icon: 'info',
-            title: 'Solicitud pendiente',
-            text: 'Espera a que el usuario acepte tu solicitud.',
-          });
+          toast.info('Espera a que el usuario acepte tu solicitud.');
         }
       }
     } catch (error) {
       console.error('Error al seleccionar contacto:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo verificar el estado del chat.'
-      });
+      toast.error('No se pudo verificar el estado del chat.');
     }
   };
 
   const manejarAceptarSolicitud = async (solicitud) => {
     try {
       await aceptarSolicitud(solicitud.id);
-      Swal.fire({
-        icon: 'success',
-        title: '¡Solicitud aceptada!',
-        text: 'Ahora puedes chatear con este usuario.',
-        timer: 2000
-      });
-      cargarDatos();
+      toast.success('¡Solicitud aceptada! Ahora pueden chatear.');
+      cargarDatos(); // Recargar para mostrar el nuevo contacto
     } catch (error) {
       console.error('Error al aceptar solicitud:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo aceptar la solicitud.'
-      });
+      toast.error('No se pudo aceptar la solicitud.');
     }
   };
 
@@ -198,20 +172,11 @@ export default function PaginaChats() {
     if (resultado.isConfirmed) {
       try {
         await rechazarSolicitud(solicitud.id);
-        Swal.fire({
-          icon: 'success',
-          title: 'Solicitud rechazada',
-          text: 'El usuario ha sido bloqueado.',
-          timer: 2000
-        });
+        toast.success('Solicitud rechazada y usuario bloqueado.');
         cargarDatos();
       } catch (error) {
         console.error('Error al rechazar solicitud:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo rechazar la solicitud.'
-        });
+        toast.error('No se pudo rechazar la solicitud.');
       }
     }
   };
@@ -230,20 +195,12 @@ export default function PaginaChats() {
     if (resultado.isConfirmed) {
       try {
         await bloquearUsuario(String(usuario.id), String(usuarioDestino.id));
-        Swal.fire({
-          icon: 'success',
-          title: 'Usuario bloqueado',
-          timer: 2000
-        });
+        toast.success('Usuario bloqueado');
         setSeleccionado(null);
         cargarDatos();
       } catch (error) {
         console.error('Error al bloquear:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo bloquear al usuario.'
-        });
+        toast.error('No se pudo bloquear al usuario.');
       }
     }
   };
@@ -261,26 +218,28 @@ export default function PaginaChats() {
     if (resultado.isConfirmed) {
       try {
         await desbloquearUsuario(String(usuario.id), bloqueo.bloqueadoId);
-        Swal.fire({
-          icon: 'success',
-          title: 'Usuario desbloqueado',
-          timer: 2000
-        });
+        toast.success('Usuario desbloqueado');
         cargarDatos();
       } catch (error) {
         console.error('Error al desbloquear:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo desbloquear al usuario.'
-        });
+        toast.error('No se pudo desbloquear al usuario.');
       }
     }
   };
 
-  const obtenerNombreUsuario = (usuarioId) => {
+  // ✅ MEJORADO: Obtener información completa del usuario (nombre Y correo)
+  const obtenerInfoUsuario = (usuarioId) => {
     const u = usuarios.find(usr => String(usr.id) === String(usuarioId));
-    return u ? u.nombreUsuario : 'Usuario';
+    if (u) {
+      return {
+        nombre: u.nombreUsuario,
+        correo: u.correo
+      };
+    }
+    return {
+      nombre: 'Usuario',
+      correo: ''
+    };
   };
 
   if (!usuario) {
@@ -288,51 +247,22 @@ export default function PaginaChats() {
   }
 
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 120px)' }}>
+    <div className="pagina-chats">
       {/* Sidebar */}
-      <div style={{ 
-        width: '320px', 
-        borderRight: '1px solid #ddd',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#f8f9fa'
-      }}>
+      <div className="chats-sidebar">
         {/* Header del sidebar */}
-        <div style={{ padding: '20px', borderBottom: '1px solid #ddd' }}>
-          <h3 style={{ margin: '0 0 15px 0' }}>Chats</h3>
+        <div className="chats-sidebar-header">
+          <h3>Chats</h3>
           
           {/* Botones de acción */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+          <div className="chats-botones-accion">
             <button
               onClick={() => setMostrarSolicitudes(!mostrarSolicitudes)}
-              style={{
-                flex: 1,
-                padding: '8px',
-                backgroundColor: mostrarSolicitudes ? '#007bff' : '#e9ecef',
-                color: mostrarSolicitudes ? 'white' : 'black',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '11px',
-                position: 'relative'
-              }}
+              className={`btn-solicitudes ${mostrarSolicitudes ? 'activo' : ''}`}
             >
               Solicitudes
               {solicitudesPendientes.length > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  top: '-5px',
-                  right: '-5px',
-                  backgroundColor: '#dc3545',
-                  color: 'white',
-                  borderRadius: '50%',
-                  width: '20px',
-                  height: '20px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '11px'
-                }}>
+                <span className="badge-notificacion">
                   {solicitudesPendientes.length}
                 </span>
               )}
@@ -340,162 +270,112 @@ export default function PaginaChats() {
             
             <button
               onClick={() => setMostrarBloqueados(!mostrarBloqueados)}
-              style={{
-                flex: 1,
-                padding: '8px',
-                backgroundColor: mostrarBloqueados ? '#dc3545' : '#e9ecef',
-                color: mostrarBloqueados ? 'white' : 'black',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '11px'
-              }}
+              className={`btn-bloqueados ${mostrarBloqueados ? 'activo' : ''}`}
             >
               Bloqueados
             </button>
             
             <button
               onClick={manejarEnviarMensaje}
-              style={{
-                flex: 1,
-                padding: '8px',
-                backgroundColor: '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '11px'
-              }}
+              className="btn-nuevo-mensaje"
             >
               + Mensaje
             </button>
           </div>
           
           {/* Barra de búsqueda */}
-          <input
-            type="text"
-            placeholder="Buscar contacto..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '10px',
-              border: '1px solid #ddd',
-              borderRadius: '5px',
-              fontSize: '14px',
-              boxSizing: 'border-box'
-            }}
-          />
+          {!mostrarSolicitudes && !mostrarBloqueados && (
+            <div className="chats-busqueda">
+              <input
+                type="text"
+                placeholder="Buscar contacto..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+              />
+            </div>
+          )}
         </div>
 
         {/* Lista de contenido */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div className="chats-lista-contenido">
           {mostrarSolicitudes ? (
             // Mostrar solicitudes pendientes
-            <div style={{ padding: '10px' }}>
-              <h4 style={{ marginBottom: '10px', fontSize: '14px', color: '#666' }}>
-                Solicitudes pendientes
-              </h4>
+            <div className="chats-lista-contenido-inner">
+              <h4 className="chats-lista-titulo">Solicitudes pendientes</h4>
               {solicitudesPendientes.length === 0 ? (
-                <p style={{ textAlign: 'center', color: '#999', fontSize: '13px' }}>
+                <p className="chats-lista-vacia">
                   No tienes solicitudes pendientes
                 </p>
               ) : (
-                solicitudesPendientes.map(sol => (
-                  <div key={sol.id} style={{
-                    padding: '12px',
-                    backgroundColor: 'white',
-                    borderRadius: '8px',
-                    marginBottom: '10px',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                  }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                      {obtenerNombreUsuario(sol.emisorId)}
+                solicitudesPendientes.map(sol => {
+                  const infoUsuario = obtenerInfoUsuario(sol.emisorId);
+                  return (
+                    <div key={sol.id} className="chat-item solicitud-item">
+                      <div className="solicitud-autor">
+                        {infoUsuario.nombre}
+                      </div>
+                      {/* ✅ NUEVO: Mostrar el correo debajo */}
+                      {infoUsuario.correo && (
+                        <div style={{ 
+                          fontSize: '12px', 
+                          color: 'var(--texto)', 
+                          opacity: 0.7,
+                          marginBottom: '8px' 
+                        }}>
+                          {infoUsuario.correo}
+                        </div>
+                      )}
+                      <div className="solicitud-botones">
+                        <button
+                          onClick={() => manejarAceptarSolicitud(sol)}
+                          className="btn-aceptar"
+                        >
+                          Aceptar
+                        </button>
+                        <button
+                          onClick={() => manejarRechazarSolicitud(sol)}
+                          className="btn-rechazar"
+                        >
+                          Rechazar
+                        </button>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '5px' }}>
-                      <button
-                        onClick={() => manejarAceptarSolicitud(sol)}
-                        style={{
-                          flex: 1,
-                          padding: '6px',
-                          backgroundColor: '#28a745',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Aceptar
-                      </button>
-                      <button
-                        onClick={() => manejarRechazarSolicitud(sol)}
-                        style={{
-                          flex: 1,
-                          padding: '6px',
-                          backgroundColor: '#dc3545',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        Rechazar
-                      </button>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           ) : mostrarBloqueados ? (
             // Mostrar usuarios bloqueados
-            <div style={{ padding: '10px' }}>
-              <h4 style={{ marginBottom: '10px', fontSize: '14px', color: '#666' }}>
-                Usuarios bloqueados
-              </h4>
+            <div className="chats-lista-contenido-inner">
+              <h4 className="chats-lista-titulo">Usuarios bloqueados</h4>
               {usuariosBloqueados.length === 0 ? (
-                <p style={{ textAlign: 'center', color: '#999', fontSize: '13px' }}>
+                <p className="chats-lista-vacia">
                   No tienes usuarios bloqueados
                 </p>
               ) : (
-                usuariosBloqueados.map(bloqueo => (
-                  <div key={bloqueo.id} style={{
-                    padding: '12px',
-                    backgroundColor: 'white',
-                    borderRadius: '8px',
-                    marginBottom: '10px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                  }}>
-                    <span style={{ fontWeight: 'bold' }}>
-                      {obtenerNombreUsuario(bloqueo.bloqueadoId)}
-                    </span>
-                    <button
-                      onClick={() => manejarDesbloquear(bloqueo)}
-                      style={{
-                        padding: '6px 12px',
-                        backgroundColor: '#6c757d',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '12px'
-                      }}
-                    >
-                      Desbloquear
-                    </button>
-                  </div>
-                ))
+                usuariosBloqueados.map(bloqueo => {
+                  const infoUsuario = obtenerInfoUsuario(bloqueo.bloqueadoId);
+                  return (
+                    <div key={bloqueo.id} className="chat-item bloqueado-item">
+                      <span className="bloqueado-nombre">
+                        {infoUsuario.nombre}
+                      </span>
+                      <button
+                        onClick={() => manejarDesbloquear(bloqueo)}
+                        className="btn-desbloquear"
+                      >
+                        Desbloquear
+                      </button>
+                    </div>
+                  );
+                })
               )}
             </div>
           ) : (
             // Mostrar lista de contactos
             <div>
               {contactosFiltrados.length === 0 ? (
-                <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
+                <div className="chats-lista-vacia">
                   {busqueda ? 'No se encontraron contactos' : 'No tienes contactos. Agrega uno con el botón "+ Mensaje"'}
                 </div>
               ) : (
@@ -503,26 +383,10 @@ export default function PaginaChats() {
                   <div
                     key={contacto.id}
                     onClick={() => manejarSeleccionContacto(contacto)}
-                    style={{
-                      padding: '15px 20px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #eee',
-                      backgroundColor: seleccionado?.id === contacto.contactoId ? '#e7f3ff' : 'white',
-                      transition: 'background-color 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (seleccionado?.id !== contacto.contactoId) {
-                        e.currentTarget.style.backgroundColor = '#f8f9fa';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (seleccionado?.id !== contacto.contactoId) {
-                        e.currentTarget.style.backgroundColor = 'white';
-                      }
-                    }}
+                    className={`contacto-item ${seleccionado?.id === contacto.contactoId ? 'seleccionado' : ''}`}
                   >
-                    <div style={{ fontWeight: '500' }}>{contacto.nombrePersonalizado}</div>
-                    <div style={{ fontSize: '12px', color: '#666' }}>{contacto.correo}</div>
+                    <div className="contacto-nombre">{contacto.nombrePersonalizado}</div>
+                    <div className="contacto-correo">{contacto.correo}</div>
                   </div>
                 ))
               )}
@@ -532,7 +396,7 @@ export default function PaginaChats() {
       </div>
 
       {/* Área del chat */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div className="chats-area-chat">
         {seleccionado ? (
           <ChatIndividual 
             chat={seleccionado} 
@@ -540,14 +404,7 @@ export default function PaginaChats() {
             onBloquear={() => manejarBloquear(seleccionado)}
           />
         ) : (
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#999',
-            fontSize: '18px'
-          }}>
+          <div className="chats-sin-seleccion">
             Selecciona un contacto para comenzar a chatear
           </div>
         )}

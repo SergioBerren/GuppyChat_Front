@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ContextoAuth } from '../login/AuthProvider.jsx';
 import api from '../servicios/api.js';
+import { eliminarCuenta } from '../servicios/servicioAuth.js';
 import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
 import '../estilos/estiloCuenta.css';
 import '../estilos/estiloButtons.css';
 import '../estilos/estiloInputs.css';
@@ -13,11 +16,14 @@ import {
   FaMoon, 
   FaSave, 
   FaTimes,
-  FaKey
+  FaKey,
+  FaFileContract,
+  FaTrash
 } from 'react-icons/fa';
 
 export default function Cuenta() {
   const { usuario, actualizarUsuarioLocal, cerrarSesion } = useContext(ContextoAuth);
+  const navigate = useNavigate();
   const [datos, setDatos] = useState({ nombre: '', apellido: '', nombreUsuario: '' });
   const [editando, setEditando] = useState(false);
   const [modoOscuro, setModoOscuro] = useState(false);
@@ -54,7 +60,6 @@ export default function Cuenta() {
   const handleActualizar = async (e) => {
     e.preventDefault();
 
-    // Validación: campos obligatorios
     if (!datos.nombreUsuario.trim() || !datos.nombre.trim() || !datos.apellido.trim()) {
       toast.error('El nombre de usuario, nombre y apellido son obligatorios');
       return;
@@ -116,6 +121,79 @@ export default function Cuenta() {
     }
   };
 
+  const handleEliminarCuenta = async () => {
+    const resultado = await Swal.fire({
+      title: '⚠️ ¿Eliminar cuenta permanentemente?',
+      html: `
+        <div style="text-align: left; padding: 0 20px;">
+          <p style="margin-bottom: 15px; font-weight: bold;">Esta acción es IRREVERSIBLE y eliminará:</p>
+          <ul style="margin-left: 20px; line-height: 1.8;">
+            <li>Tu perfil completo</li>
+            <li>Todos tus chats y mensajes</li>
+            <li>Tus contactos y solicitudes</li>
+            <li>Tus bloqueos</li>
+          </ul>
+          <p style="margin-top: 15px; color: #d33; font-weight: bold;">
+            No podrás recuperar esta información
+          </p>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar mi cuenta',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      reverseButtons: true
+    });
+
+    if (!resultado.isConfirmed) return;
+
+    const { value: password } = await Swal.fire({
+      title: 'Confirma tu contraseña',
+      input: 'password',
+      inputLabel: 'Para confirmar la eliminación, ingresa tu contraseña:',
+      inputPlaceholder: 'Contraseña',
+      showCancelButton: true,
+      confirmButtonText: 'Eliminar cuenta',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Debes ingresar tu contraseña';
+        }
+      }
+    });
+
+    if (!password) return;
+
+    try {
+      await eliminarCuenta(usuario.correo, password);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Cuenta eliminada',
+        text: 'Tu cuenta ha sido eliminada permanentemente',
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      setTimeout(() => {
+        cerrarSesion();
+        navigate('/login');
+      }, 2000);
+
+    } catch (err) {
+      console.error('❌ Error al eliminar cuenta:', err);
+      const mensaje = err.response?.data?.error || 'Error al eliminar la cuenta';
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: mensaje
+      });
+    }
+  };
+
   const toggleModo = async () => {
     const nuevoModo = !modoOscuro;
     setModoOscuro(nuevoModo);
@@ -149,42 +227,107 @@ export default function Cuenta() {
         <p><strong>Email:</strong> {usuario.correo}</p>
       </div>
 
+      <button onClick={() => navigate('/terminosycondiciones')} className="boton-terminos">
+        <FaFileContract /> Términos y Condiciones
+      </button>
+
       {!editando && (
-        <button onClick={() => setEditando(true)}><FaEdit /> Modificar datos</button>
+        <button onClick={() => setEditando(true)}>
+          <FaEdit /> Modificar datos
+        </button>
       )}
 
       {editando && (
         <form onSubmit={handleActualizar} className="formulario-edicion">
-          <input name="nombreUsuario" value={datos.nombreUsuario} onChange={handleChange} placeholder="Nombre de usuario"/>
-          <input name="nombre" value={datos.nombre} onChange={handleChange} placeholder="Nombre"/>
-          <input name="apellido" value={datos.apellido} onChange={handleChange} placeholder="Apellido"/>
+          <input 
+            name="nombreUsuario" 
+            value={datos.nombreUsuario} 
+            onChange={handleChange} 
+            placeholder="Nombre de usuario"
+          />
+          <input 
+            name="nombre" 
+            value={datos.nombre} 
+            onChange={handleChange} 
+            placeholder="Nombre"
+          />
+          <input 
+            name="apellido" 
+            value={datos.apellido} 
+            onChange={handleChange} 
+            placeholder="Apellido"
+          />
           
-          <button type="submit"><FaSave /> Guardar cambios</button>
-          <button type="button" onClick={() => setEditando(false)}><FaTimes /> Cancelar</button>
+          <button type="submit">
+            <FaSave /> Guardar cambios
+          </button>
+          <button type="button" onClick={() => setEditando(false)}>
+            <FaTimes /> Cancelar
+          </button>
         </form>
       )}
 
       {!mostrarCambiarPassword && (
-        <button onClick={() => setMostrarCambiarPassword(true)}><FaKey /> Cambiar contraseña</button>
+        <button onClick={() => setMostrarCambiarPassword(true)}>
+          <FaKey /> Cambiar contraseña
+        </button>
       )}
 
       {mostrarCambiarPassword && (
         <form onSubmit={handleCambiarPassword} className="formulario-edicion">
-          <input type="password" name="passwordActual" value={passwordData.passwordActual} onChange={handlePasswordChange} placeholder="Contraseña actual"/>
-          <input type="password" name="passwordNueva" value={passwordData.passwordNueva} onChange={handlePasswordChange} placeholder="Nueva contraseña"/>
-          <input type="password" name="passwordNuevaConfirm" value={passwordData.passwordNuevaConfirm} onChange={handlePasswordChange} placeholder="Confirmar nueva contraseña"/>
+          <input 
+            type="password" 
+            name="passwordActual" 
+            value={passwordData.passwordActual} 
+            onChange={handlePasswordChange} 
+            placeholder="Contraseña actual"
+          />
+          <input 
+            type="password" 
+            name="passwordNueva" 
+            value={passwordData.passwordNueva} 
+            onChange={handlePasswordChange} 
+            placeholder="Nueva contraseña"
+          />
+          <input 
+            type="password" 
+            name="passwordNuevaConfirm" 
+            value={passwordData.passwordNuevaConfirm} 
+            onChange={handlePasswordChange} 
+            placeholder="Confirmar nueva contraseña"
+          />
           
-          <button type="submit"><FaSave /> Cambiar contraseña</button>
-          <button type="button" onClick={() => setMostrarCambiarPassword(false)}><FaTimes /> Cancelar</button>
+          <button type="submit">
+            <FaSave /> Cambiar contraseña
+          </button>
+          <button type="button" onClick={() => setMostrarCambiarPassword(false)}>
+            <FaTimes /> Cancelar
+          </button>
         </form>
       )}
 
-      <div className="acciones-usuario">
-        <button onClick={toggleModo}>
-          {modoOscuro ? (<><FaSun /> Modo claro</>) : (<><FaMoon /> Modo oscuro</>)}
-        </button>
-        <button onClick={handleCerrarSesion}><FaSignOutAlt /> Cerrar sesión</button>
-      </div>
+      {/* Botón de modo oscuro */}
+      <button onClick={toggleModo}>
+        {modoOscuro ? (
+          <>
+            <FaSun /> Modo claro
+          </>
+        ) : (
+          <>
+            <FaMoon /> Modo oscuro
+          </>
+        )}
+      </button>
+
+      {/* Botón de cerrar sesión */}
+      <button onClick={handleCerrarSesion}>
+        <FaSignOutAlt /> Cerrar sesión
+      </button>
+
+      {/* ✅ Botón de eliminar cuenta - AHORA SEPARADO */}
+      <button onClick={handleEliminarCuenta} className="boton-eliminar-cuenta">
+        <FaTrash /> Eliminar cuenta
+      </button>
     </div>
   );
 }

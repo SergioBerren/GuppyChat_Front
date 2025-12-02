@@ -121,9 +121,10 @@
   background-color: var(--header);
   display: flex;
   gap: 10px;
+  align-items: center;
 }
 
-.chat-input-container input {
+.chat-input-container input[type="text"] {
   flex: 1;
   padding: 10px;
   border: 1px solid var(--borde);
@@ -133,8 +134,12 @@
   color: var(--input-texto);
 }
 
+/* ✅ ARREGLADO: Todos los botones con el MISMO tamaño */
 .chat-input-container button {
-  padding: 10px 20px;
+  padding: 10px;
+  min-width: 44px;
+  height: 44px;
+  width: auto;
   background-color: var(--boton-fondo);
   color: var(--boton-texto);
   border: none;
@@ -142,17 +147,32 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   transition: opacity 0.2s;
+  font-size: 14px;
+  font-family: "Kalam", cursive;
+}
+
+/* Botón de enviar con texto */
+.chat-input-container button:last-child {
+  padding: 10px 15px;
+  min-width: auto;
 }
 
 .chat-input-container button:disabled {
   background-color: var(--borde);
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .chat-input-container button:not(:disabled):hover {
   opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.chat-input-container button:not(:disabled):active {
+  transform: translateY(0);
 }
 
 /* Responsive */
@@ -165,5 +185,14 @@
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
+  }
+  
+  .chat-input-container {
+    flex-wrap: wrap;
+  }
+  
+  .chat-input-container button {
+    min-width: 40px;
+    height: 40px;
   }
 }

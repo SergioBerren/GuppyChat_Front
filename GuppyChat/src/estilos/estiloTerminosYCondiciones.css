@@ -1,0 +1,68 @@
+.terminos-container {
+  padding: 30px;
+  max-width: 900px;
+  margin: 40px auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  line-height: 1.7;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.titulo-terminos {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.texto-terminos {
+  margin-bottom: 18px;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+.lista-terminos li {
+  margin-bottom: 10px;
+  padding-left: 10px;
+  position: relative;
+  font-size: 1.05rem;
+  color: #444;
+}
+
+.lista-terminos li::before {
+  content: '•';
+  position: absolute;
+  left: -12px;
+  color: #007bff;
+  font-size: 1.2rem;
+}
+
+.volver-cuenta-container {
+  text-align: center;
+  margin-top: 35px;
+}
+
+.boton-volver-cuenta {
+  display: inline-block;
+  padding: 12px 25px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+  transition: 0.25s ease;
+}
+
+.boton-volver-cuenta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+/* Animación suave */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
